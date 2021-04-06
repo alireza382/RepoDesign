@@ -2,6 +2,7 @@
 using RepoDesign.dataRepo.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -33,12 +34,33 @@ namespace RepoDesign.dataRepo.Repository
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null, string includePeroperties = null)
         {
-            throw new NotImplementedException();
+            IQueryable<T> query = _dbset;
+            if(filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includePeroperties != null)
+            {
+                foreach (var includeProperty in includePeroperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            if(orderby != null)
+            {
+
+                return orderby(query).ToList();
+            }
+
+            return query.ToList();
         }
 
         public T GetFristOrDefault(Expression<Func<T, bool>> filter = null, string includePeroperties = null)
         {
-            throw new NotImplementedException();
+            var query = GetAll(filter, null, includePeroperties: includePeroperties);
+            return query.FirstOrDefault();
         }
 
         public void Remove(int i)
